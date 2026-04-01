@@ -832,7 +832,18 @@ exports.init = init;
             const templateConfig = {
                 rememberExpirationKey: "staticrypt_expiration",
                 rememberPassphraseKey: "staticrypt_passphrase",
-                replaceHtmlCallback: function(html) { var blob = new Blob([html], {type: "text/html"}); window.location.href = URL.createObjectURL(blob); },
+                replaceHtmlCallback: function(html) {
+                    // Write the decrypted HTML and re-execute scripts
+                    document.open("text/html", "replace");
+                    document.write(html);
+                    document.close();
+                    // Re-execute all inline scripts since document.write doesn't run them in modern browsers
+                    Array.from(document.querySelectorAll("script:not([src])")).forEach(function(old) {
+                        var s = document.createElement("script");
+                        s.textContent = old.textContent;
+                        old.parentNode.replaceChild(s, old);
+                    });
+                },
                 clearLocalStorageCallback: null,
             };
 
