@@ -642,12 +642,13 @@ exports.init = init;
                 rememberExpirationKey: "staticrypt_expiration",
                 rememberPassphraseKey: "staticrypt_passphrase",
                 replaceHtmlCallback: function(html) {
-                    document.open("text/html", "replace");
-                    document.write(html);
-                    document.close();
-                    Array.from(document.querySelectorAll("script:not([src])")).forEach(function(old) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, "text/html");
+                    document.documentElement.innerHTML = doc.documentElement.innerHTML;
+                    Array.from(document.querySelectorAll("script")).forEach(function(old) {
                         var s = document.createElement("script");
-                        s.textContent = old.textContent;
+                        if (old.src) { s.src = old.src; }
+                        else { s.textContent = old.textContent; }
                         old.parentNode.replaceChild(s, old);
                     });
                 },
